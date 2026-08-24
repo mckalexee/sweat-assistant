@@ -1,0 +1,175 @@
+{
+  "title": "Sweat",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure outdoor inputs",
+        "description": "Choose the entities that describe current outdoor conditions. Exactly one humidity source is required.",
+        "data": {
+          "temperature_entity": "Air temperature",
+          "humidity_entity": "Relative humidity",
+          "dew_point_entity": "Dew point",
+          "wind_speed_entity": "Wind speed"
+        },
+        "data_description": {
+          "humidity_entity": "Select this or dew point, but not both.",
+          "dew_point_entity": "Select this or relative humidity, but not both.",
+          "wind_speed_entity": "Used as observed wind for UTCI; walking air movement is added only for the Gagge model."
+        },
+        "sections": {
+          "solar": {
+            "name": "Solar inputs",
+            "description": "Optional. Configure DNI, or configure both GHI and diffuse irradiance. Sun sensors are omitted when no irradiance source is selected.",
+            "data": {
+              "dni_entity": "Direct normal irradiance (DNI)",
+              "ghi_entity": "Global horizontal irradiance (GHI)",
+              "diffuse_entity": "Diffuse horizontal irradiance",
+              "solar_altitude_entity": "Solar altitude"
+            },
+            "data_description": {
+              "solar_altitude_entity": "For a Sun entity, Sweat reads its elevation attribute. A numeric entity may instead report degrees as its state."
+            }
+          },
+          "forecast": {
+            "name": "48-hour forecast",
+            "description": "Optional. Select all six input_text entities or leave all six empty. Series use canonical units: °C, °C, m/s, and W/m².",
+            "data": {
+              "forecast_temperature_entity": "Forecast air temperature series",
+              "forecast_dew_point_entity": "Forecast dew point series",
+              "forecast_wind_entity": "Forecast wind series",
+              "forecast_dni_entity": "Forecast DNI series",
+              "forecast_ghi_entity": "Forecast GHI series",
+              "forecast_diffuse_entity": "Forecast diffuse series"
+            }
+          },
+          "advanced": {
+            "name": "Advanced assumptions",
+            "description": "Physiological and solar-model assumptions. These can be changed later in integration options.",
+            "data": {
+              "metabolic_rate": "Metabolic rate",
+              "clothing": "Clothing insulation",
+              "walking_speed": "Walking air movement",
+              "posture": "Posture",
+              "sky_view_factor": "Sky-view factor",
+              "f_bes": "Body fraction exposed to sun",
+              "sol_transmittance": "Solar transmittance",
+              "sharp": "Sun-to-body horizontal angle (SHARP)"
+            },
+            "data_description": {
+              "walking_speed": "Added to observed wind only for the Gagge wettedness model.",
+              "sky_view_factor": "Street-canyon estimate. In SolarCal it scales diffuse and ground-reflected radiation, not direct beam.",
+              "f_bes": "Fraction of the possible body surface exposed to direct sun.",
+              "sol_transmittance": "Use 1 outdoors with no window or other solar barrier.",
+              "sharp": "Orientation assumption: 0° is front, 90° is side-on, and 180° is back."
+            }
+          }
+        }
+      },
+      "reconfigure": {
+        "title": "Change source entities",
+        "description": "Change the current-condition or forecast source entities.",
+        "data": {
+          "temperature_entity": "Air temperature",
+          "humidity_entity": "Relative humidity",
+          "dew_point_entity": "Dew point",
+          "wind_speed_entity": "Wind speed"
+        },
+        "sections": {
+          "solar": {
+            "name": "Solar inputs",
+            "data": {
+              "dni_entity": "Direct normal irradiance (DNI)",
+              "ghi_entity": "Global horizontal irradiance (GHI)",
+              "diffuse_entity": "Diffuse horizontal irradiance",
+              "solar_altitude_entity": "Solar altitude"
+            }
+          },
+          "forecast": {
+            "name": "48-hour forecast",
+            "data": {
+              "forecast_temperature_entity": "Forecast air temperature series",
+              "forecast_dew_point_entity": "Forecast dew point series",
+              "forecast_wind_entity": "Forecast wind series",
+              "forecast_dni_entity": "Forecast DNI series",
+              "forecast_ghi_entity": "Forecast GHI series",
+              "forecast_diffuse_entity": "Forecast diffuse series"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "choose_one_humidity_source": "Select exactly one of relative humidity or dew point.",
+      "unsupported_solar_combination": "Configure DNI, or configure both GHI and diffuse irradiance.",
+      "solar_altitude_required": "Solar altitude is required when irradiance is configured.",
+      "forecast_all_or_none": "Select all six forecast entities or leave all six empty.",
+      "invalid_temperature_source": "The selected temperature or dew-point entity must have a numeric state and a supported temperature unit.",
+      "invalid_humidity_source": "The selected humidity entity must be a value from 0 to 100 with a percent unit.",
+      "invalid_wind_source": "The selected wind entity must have a nonnegative numeric state and a supported wind-speed unit.",
+      "invalid_irradiance_source": "Selected irradiance entities must be nonnegative numbers in W/m².",
+      "invalid_altitude_source": "The solar-altitude source must provide a numeric state or elevation attribute no greater than 90°.",
+      "invalid_forecast_source": "Each available forecast helper must contain one epoch and exactly 48 hourly integers."
+    },
+    "abort": {
+      "single_instance_allowed": "Only one Sweat configuration is supported.",
+      "reconfigure_successful": "Source entities were updated successfully."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Adjust model assumptions",
+        "sections": {
+          "advanced": {
+            "name": "Advanced assumptions",
+            "data": {
+              "metabolic_rate": "Metabolic rate",
+              "clothing": "Clothing insulation",
+              "walking_speed": "Walking air movement",
+              "posture": "Posture",
+              "sky_view_factor": "Sky-view factor",
+              "f_bes": "Body fraction exposed to sun",
+              "sol_transmittance": "Solar transmittance",
+              "sharp": "Sun-to-body horizontal angle (SHARP)"
+            },
+            "data_description": {
+              "walking_speed": "Added to observed wind only for the Gagge wettedness model.",
+              "sky_view_factor": "Scales diffuse and ground-reflected radiation, not direct beam.",
+              "sharp": "0° is front, 90° is side-on, and 180° is back."
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "posture": {
+      "options": {
+        "standing": "Standing",
+        "sitting": "Sitting"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "shade": {
+        "name": "Sweat shade"
+      },
+      "utci_shade": {
+        "name": "Sweat UTCI shade"
+      },
+      "sun": {
+        "name": "Sweat sun"
+      },
+      "utci_sun": {
+        "name": "Sweat UTCI sun"
+      },
+      "forecast_shade": {
+        "name": "Sweat forecast shade"
+      },
+      "forecast_sun": {
+        "name": "Sweat forecast sun"
+      }
+    }
+  }
+}
