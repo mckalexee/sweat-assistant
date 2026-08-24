@@ -58,4 +58,7 @@ def test_github_actions_are_pinned_to_full_commit_shas() -> None:
     workflow = (ROOT / ".github" / "workflows" / "validate.yml").read_text()
     references = re.findall(r"uses:\s*[^@\s]+@([^\s#]+)", workflow)
     assert references
-    assert all(re.fullmatch(r"[0-9a-f]{40}", reference) for reference in references)
+    assert all(
+        re.fullmatch(r"[0-9a-f]{40}|sha256:[0-9a-f]{64}", reference)
+        for reference in references
+    )
