@@ -167,6 +167,7 @@ def test_ghi_and_diffuse_only_derive_the_expected_dni() -> None:
         (800.0, 1000.0, 0.0),
         (0.0, 10.0, 0.0),
         (0.0, 0.0, 100.0),
+        (1000.0, 0.0, 10.0),
     ],
 )
 def test_forecast_rejects_inconsistent_solar_components(

@@ -354,6 +354,8 @@ def parse_forecast_series(raw: str, label: str) -> ParsedSeries:
 def _forecast_altitude(dni: float, ghi: float, diffuse: float) -> float:
     if min(dni, ghi, diffuse) < 0:
         raise InputError("forecast irradiance cannot be negative")
+    if diffuse - ghi > _IRRADIANCE_TOLERANCE:
+        raise InputError("diffuse irradiance cannot exceed GHI")
     if dni <= 1.0:
         if abs(ghi - diffuse) > _IRRADIANCE_TOLERANCE:
             raise InputError("forecast irradiance components are inconsistent")

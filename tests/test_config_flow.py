@@ -206,6 +206,45 @@ async def test_user_flow_rejects_mismatched_forecast_epochs(hass) -> None:
     assert result["errors"]["base"] == "invalid_forecast_source"
 
 
+async def test_user_flow_rejects_inconsistent_forecast_solar(hass) -> None:
+    epoch = 1787587200
+    forecast = {
+        CONF_FORECAST_TEMPERATURE_ENTITY: "input_text.temperature",
+        CONF_FORECAST_DEW_POINT_ENTITY: "input_text.dew_point",
+        CONF_FORECAST_WIND_ENTITY: "input_text.wind",
+        CONF_FORECAST_DNI_ENTITY: "input_text.dni",
+        CONF_FORECAST_GHI_ENTITY: "input_text.ghi",
+        CONF_FORECAST_DIFFUSE_ENTITY: "input_text.diffuse",
+    }
+    values = {
+        CONF_FORECAST_TEMPERATURE_ENTITY: 20,
+        CONF_FORECAST_DEW_POINT_ENTITY: 10,
+        CONF_FORECAST_WIND_ENTITY: 1,
+        CONF_FORECAST_DNI_ENTITY: 1000,
+        CONF_FORECAST_GHI_ENTITY: 0,
+        CONF_FORECAST_DIFFUSE_ENTITY: 10,
+    }
+    for key, entity_id in forecast.items():
+        hass.states.async_set(entity_id, _forecast_series(epoch, values[key]))
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            CONF_TEMPERATURE_ENTITY: "sensor.outdoor_temperature",
+            CONF_DEW_POINT_ENTITY: "sensor.outdoor_dew_point",
+            CONF_WIND_SPEED_ENTITY: "sensor.outdoor_wind",
+            CONF_SOLAR: {},
+            CONF_FORECAST: forecast,
+            CONF_ADVANCED: {},
+        },
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"]["base"] == "invalid_forecast_source"
+
+
 async def test_reconfigure_updates_sources_and_reloads(hass) -> None:
     entry = MockConfigEntry(
         domain=DOMAIN,
