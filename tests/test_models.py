@@ -72,6 +72,9 @@ def test_forecast_parser_requires_exactly_48_values() -> None:
     assert len(parsed.values) == 48
     with pytest.raises(InputError):
         parse_forecast_series("1787587200,1,2", "test")
+    unaligned = "1787587260," + ",".join("1" for _ in range(48))
+    with pytest.raises(InputError, match="aligned"):
+        parse_forecast_series(unaligned, "test")
 
 
 def test_forecast_is_same_epoch_dst_safe_and_under_character_budget() -> None:
@@ -159,7 +162,12 @@ def test_ghi_and_diffuse_only_derive_the_expected_dni() -> None:
 
 @pytest.mark.parametrize(
     ("dni", "ghi", "diffuse"),
-    [(800.0, 100.0, 200.0), (800.0, 1000.0, 0.0), (0.0, 10.0, 0.0)],
+    [
+        (800.0, 100.0, 200.0),
+        (800.0, 1000.0, 0.0),
+        (0.0, 10.0, 0.0),
+        (0.0, 0.0, 100.0),
+    ],
 )
 def test_forecast_rejects_inconsistent_solar_components(
     dni: float, ghi: float, diffuse: float
@@ -172,6 +180,17 @@ def test_forecast_accepts_low_sun_rounding_tolerance() -> None:
     assert _forecast_altitude(800.0, 8.0, 0.0) == pytest.approx(
         math.degrees(math.asin(0.01))
     )
+
+
+def test_current_solar_rejects_diffuse_greater_than_ghi() -> None:
+    with pytest.raises(InputError, match="diffuse"):
+        _calculate_solar_delta(
+            altitude=30.0,
+            dni=600.0,
+            ghi=0.0,
+            diffuse=100.0,
+            options=OPTIONS,
+        )
 
 
 def test_forecast_rejects_mixed_generation() -> None:

@@ -385,14 +385,45 @@ def _validate_live_sources(hass: Any, data: dict[str, Any]) -> dict[str, str]:
             return {"base": "invalid_altitude_source"}
 
     if all(data.get(key) for key in FORECAST_ENTITY_KEYS):
-        from .coordinator import InputError, parse_forecast_series
+        from .coordinator import (
+            InputError,
+            _forecast_altitude,
+            parse_forecast_series,
+        )
 
+        parsed = {}
         for key in FORECAST_ENTITY_KEYS:
             state = state_for(key)
             if state is None:
                 continue
             try:
-                parse_forecast_series(state.state, key)
+                parsed[key] = parse_forecast_series(state.state, key)
+            except InputError:
+                return {"base": "invalid_forecast_source"}
+        if len({series.epoch for series in parsed.values()}) > 1:
+            return {"base": "invalid_forecast_source"}
+        wind = parsed.get(CONF_FORECAST_WIND_ENTITY)
+        if wind is not None and any(value < 0 for value in wind.values):
+            return {"base": "invalid_forecast_source"}
+        temperature = parsed.get(CONF_FORECAST_TEMPERATURE_ENTITY)
+        dew_point = parsed.get(CONF_FORECAST_DEW_POINT_ENTITY)
+        if temperature is not None and dew_point is not None and any(
+            dew > air + 0.2
+            for air, dew in zip(temperature.values, dew_point.values, strict=True)
+        ):
+            return {"base": "invalid_forecast_source"}
+        solar = (
+            parsed.get(CONF_FORECAST_DNI_ENTITY),
+            parsed.get(CONF_FORECAST_GHI_ENTITY),
+            parsed.get(CONF_FORECAST_DIFFUSE_ENTITY),
+        )
+        if all(series is not None for series in solar):
+            try:
+                for values in zip(
+                    *(series.values for series in solar if series is not None),
+                    strict=True,
+                ):
+                    _forecast_altitude(*values)
             except InputError:
                 return {"base": "invalid_forecast_source"}
     return {}

@@ -49,7 +49,8 @@ in its state.
 With DNI alone, the exact pythermalcomfort SolarCal assumptions are used: diffuse is
 `0.2 × DNI`, and reflected horizontal radiation is derived from DNI, altitude, and
 diffuse. Configured measured components replace only those assumptions. A selected
-component becoming unavailable makes sun outputs unknown but does not affect shade.
+component becoming unavailable makes sun outputs unavailable but does not affect
+shade. Missing or malformed component data makes sun outputs unknown.
 
 With no irradiance entities, only shade sensors are created. Their `solar_data`
 attribute is `false`. This is a fully supported path, not an error.
@@ -109,7 +110,8 @@ Every helper uses this format:
 epoch,v1,v2,…,v48
 ```
 
-`epoch` is the Unix UTC timestamp of `v1`; each following value is one hour later.
+`epoch` is the Unix UTC timestamp of `v1` and must be aligned to the start of a UTC
+hour; each following value is one hour later.
 Configure each `input_text` helper with a maximum length of 255 characters; the
 default helper limit may be too short for a complete series.
 Use canonical units because `input_text` has no unit metadata:

@@ -108,7 +108,7 @@
       "invalid_wind_source": "The selected wind entity must have a nonnegative numeric state and a supported wind-speed unit.",
       "invalid_irradiance_source": "Selected irradiance entities must be nonnegative numbers in W/m².",
       "invalid_altitude_source": "The solar-altitude source must provide a numeric state or elevation attribute no greater than 90°.",
-      "invalid_forecast_source": "Each available forecast helper must contain one epoch and exactly 48 hourly integers."
+      "invalid_forecast_source": "Forecast helpers must share one UTC-hour-aligned epoch and contain 48 physically valid hourly integers."
     },
     "abort": {
       "single_instance_allowed": "Only one Sweat configuration is supported.",

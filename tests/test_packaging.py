@@ -2,6 +2,7 @@
 
 import ast
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
@@ -30,3 +31,31 @@ def test_integration_does_not_import_forbidden_dependencies() -> None:
 def test_hacs_brand_and_translation_assets_exist() -> None:
     assert (INTEGRATION / "brand" / "icon.png").stat().st_size > 0
     json.loads((INTEGRATION / "translations" / "en.json").read_text())
+
+
+def test_hacs_payload_contains_upstream_license_notice() -> None:
+    notice = (INTEGRATION / "THIRD_PARTY_NOTICES.md").read_text()
+    assert "Copyright (c) 2019 Federico Tartarini" in notice
+    assert "Permission is hereby granted, free of charge" in notice
+
+
+def test_hacs_manifest_uses_supported_keys() -> None:
+    hacs = json.loads((ROOT / "hacs.json").read_text())
+    assert set(hacs) <= {
+        "name",
+        "content_in_root",
+        "zip_release",
+        "filename",
+        "hide_default_branch",
+        "country",
+        "homeassistant",
+        "hacs",
+        "persistent_directory",
+    }
+
+
+def test_github_actions_are_pinned_to_full_commit_shas() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "validate.yml").read_text()
+    references = re.findall(r"uses:\s*[^@\s]+@([^\s#]+)", workflow)
+    assert references
+    assert all(re.fullmatch(r"[0-9a-f]{40}", reference) for reference in references)

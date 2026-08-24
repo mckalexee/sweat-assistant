@@ -208,6 +208,32 @@ async def test_broken_solar_keeps_shade_available(hass) -> None:
     assert hass.states.get("sensor.sweat_sun").state == "unknown"
 
 
+async def test_unavailable_solar_keeps_shade_available(hass) -> None:
+    _set_sources(hass)
+    hass.states.async_set("sensor.weather_dni", "unavailable")
+    hass.states.async_set("sun.home", "above_horizon", {"elevation": 60.0})
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Sweat",
+        data={
+            CONF_TEMPERATURE_ENTITY: "sensor.weather_temperature",
+            CONF_DEW_POINT_ENTITY: "sensor.weather_dew_point",
+            CONF_WIND_SPEED_ENTITY: "sensor.weather_wind",
+            CONF_DNI_ENTITY: "sensor.weather_dni",
+            CONF_SOLAR_ALTITUDE_ENTITY: "sun.home",
+        },
+        options=OPTION_DEFAULTS,
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.sweat_shade").state not in {
+        "unknown",
+        "unavailable",
+    }
+    assert hass.states.get("sensor.sweat_sun").state == "unavailable"
+
+
 async def test_invalid_solar_forecast_keeps_shade_forecast(hass, freezer) -> None:
     now = datetime(2026, 8, 24, 13, tzinfo=UTC)
     freezer.move_to(now)

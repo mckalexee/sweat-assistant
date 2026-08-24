@@ -62,6 +62,7 @@ from .models.utci import relative_humidity_from_dew_point as utci_rh_from_dew_po
 from .models.utci import utci
 
 _LOGGER = logging.getLogger(__name__)
+_IRRADIANCE_TOLERANCE = 2.0
 
 
 class InputError(ValueError):
@@ -205,12 +206,12 @@ def _altitude(value: SourceValue) -> float:
 
 def _derive_dni(ghi: float, diffuse: float, altitude: float) -> float:
     direct_horizontal = ghi - diffuse
-    if direct_horizontal < -1.0:
+    if direct_horizontal < -_IRRADIANCE_TOLERANCE:
         raise InputError("GHI cannot be lower than diffuse irradiance")
     direct_horizontal = max(direct_horizontal, 0.0)
     sine_altitude = math.sin(math.radians(altitude))
     if sine_altitude <= 0.01:
-        if direct_horizontal <= 1.0:
+        if direct_horizontal <= _IRRADIANCE_TOLERANCE:
             return 0.0
         raise InputError("cannot derive DNI while the sun is at the horizon")
     return direct_horizontal / sine_altitude
@@ -295,6 +296,12 @@ def _calculate_solar_delta(
     diffuse: float | None,
     options: ModelOptions,
 ) -> float:
+    if (
+        ghi is not None
+        and diffuse is not None
+        and diffuse - ghi > _IRRADIANCE_TOLERANCE
+    ):
+        raise InputError("diffuse irradiance cannot exceed GHI")
     if altitude < 0:
         if all(value is None or value <= 1.0 for value in (dni, ghi, diffuse)):
             return 0.0
@@ -336,6 +343,8 @@ def parse_forecast_series(raw: str, label: str) -> ParsedSeries:
         epoch = int(parts[0])
     except ValueError as err:
         raise InputError(f"{label} has an invalid epoch") from err
+    if epoch % 3600:
+        raise InputError(f"{label} epoch must be aligned to a UTC hour")
     values = tuple(_finite_number(part, label) for part in parts[1:])
     if any(not value.is_integer() for value in values):
         raise InputError(f"{label} values must be integers")
@@ -346,7 +355,7 @@ def _forecast_altitude(dni: float, ghi: float, diffuse: float) -> float:
     if min(dni, ghi, diffuse) < 0:
         raise InputError("forecast irradiance cannot be negative")
     if dni <= 1.0:
-        if ghi - diffuse > 2.0:
+        if abs(ghi - diffuse) > _IRRADIANCE_TOLERANCE:
             raise InputError("forecast irradiance components are inconsistent")
         return 0.0
     ratio = (ghi - diffuse) / dni
