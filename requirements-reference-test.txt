@@ -1,0 +1,4 @@
+# Development oracle only. Never add this file to manifest.json requirements.
+pythermalcomfort==4.4.2
+pytest>=8.3
+pytest-asyncio>=0.25

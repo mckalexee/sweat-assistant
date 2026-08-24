@@ -1,0 +1,4 @@
+# Exact target runtime test harness. This cannot coexist with the reference
+# dependency because Home Assistant 2026.8 requires Python 3.14.
+pytest-homeassistant-custom-component==0.13.356
+

@@ -1,0 +1,28 @@
+[project]
+name = "sweat-assistant"
+version = "0.1.0"
+description = "A dependency-free skin wettedness integration for Home Assistant"
+requires-python = ">=3.14.2"
+dependencies = []
+
+[project.optional-dependencies]
+quality = [
+  "ruff>=0.12",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["ASYNC", "B", "E", "F", "I", "RUF", "SIM", "UP"]
+ignore = [
+  "COM812",
+  "D203",
+  "D213",
+]

@@ -1,0 +1,59 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+# Private repositories need an explicit read grant for checkout and HACS API calls.
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      - run: uv run --python 3.14 --extra quality ruff check .
+
+  home-assistant:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      - run: >-
+          uv run --no-project --python 3.14
+          --with-requirements requirements-ha-test.txt
+          pytest -q tests --ignore=tests/test_against_reference.py
+
+  reference-models:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      - run: >-
+          uv run --no-project --python 3.13
+          --with-requirements requirements-reference-test.txt
+          pytest -q tests/test_against_reference.py
+
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Hassfest
+        uses: docker://ghcr.io/home-assistant/hassfest@sha256:312b431380054cb036e383dd6a7cd004d71c6740c4447afe4b8474f9f0cb193e
+
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: HACS validation
+        uses: docker://ghcr.io/hacs/action@sha256:41f6310585d9fb72c7a0e183cce0594355715bc24112b62bc4279b83412edccb
+        env:
+          INPUT_CATEGORY: integration
+          INPUT_COMMENT: "false"
+          INPUT_GITHUB_TOKEN: ${{ github.token }}

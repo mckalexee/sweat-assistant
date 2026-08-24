@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Sweat">
+  <defs>
+    <linearGradient id="drop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6dd5fa"/>
+      <stop offset="1" stop-color="#1976d2"/>
+    </linearGradient>
+  </defs>
+  <circle cx="190" cy="66" r="35" fill="#ffca28"/>
+  <path d="M112 20C87 64 48 112 48 159c0 48 36 77 80 77s80-29 80-77c0-47-47-95-72-139-6-11-18-11-24 0z" fill="url(#drop)"/>
+  <path d="M82 159c0 29 19 46 43 49" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="13" opacity=".72"/>
+</svg>
