@@ -3,11 +3,15 @@ name: Validate
 on:
   pull_request:
   push:
+    branches:
+      - main
   schedule:
     - cron: "0 0 * * 0"
   workflow_dispatch:
 
-permissions: {}
+# Private repositories need an explicit read grant for checkout and HACS API calls.
+permissions:
+  contents: read
 
 jobs:
   quality:
